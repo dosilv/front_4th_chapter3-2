@@ -1,7 +1,7 @@
 import { useToast } from '@chakra-ui/react';
 import { useEffect, useState } from 'react';
 
-import { Event, EventForm, RepeatingEvent, RepeatType } from '../types';
+import { Event, EventForm, RepeatingEvent } from '../types';
 import { getNextRepeatingDate } from '../utils/repeatingEventUtils';
 
 export const useEventOperations = (editing: boolean, onSave?: () => void) => {
@@ -107,9 +107,6 @@ export const useEventOperations = (editing: boolean, onSave?: () => void) => {
           date: i.toISOString(),
         });
       }
-
-      console.log(repeatingEvents);
-      debugger;
 
       const response = await fetch('/api/events-list', {
         method: 'POST',

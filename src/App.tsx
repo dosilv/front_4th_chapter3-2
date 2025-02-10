@@ -55,6 +55,7 @@ import {
   getWeeksAtMonth,
 } from './utils/dateUtils';
 import { findOverlappingEvents } from './utils/eventOverlap';
+import { isRepeatingEvent } from './utils/repeatingEventUtils';
 import { getTimeErrorMessage } from './utils/timeValidation';
 
 const categories = ['업무', '개인', '가족', '기타'];
@@ -103,8 +104,9 @@ function App() {
     editEvent,
   } = useEventForm();
 
-  const { events, saveEvent, deleteEvent } = useEventOperations(Boolean(editingEvent), () =>
-    setEditingEvent(null)
+  const { events, saveEvent, deleteEvent, saveRepeatingEvent } = useEventOperations(
+    Boolean(editingEvent),
+    () => setEditingEvent(null)
   );
 
   const { notifications, notifiedEvents, setNotifications } = useNotifications(events);
@@ -117,7 +119,16 @@ function App() {
 
   const toast = useToast();
 
-  const addOrUpdateEvent = async () => {
+  const addOrUpdateEvent = async (eventData: Event | EventForm) => {
+    if (isRepeatingEvent(eventData)) {
+      await saveRepeatingEvent(eventData);
+    } else {
+      await saveEvent(eventData);
+    }
+    resetForm();
+  };
+
+  const handleSubmit = async () => {
     if (!title || !date || !startTime || !endTime) {
       toast({
         title: '필수 정보를 모두 입력해주세요.',
@@ -134,6 +145,15 @@ function App() {
         status: 'error',
         duration: 3000,
         isClosable: true,
+      });
+      return;
+    }
+
+    if (isRepeating && repeatType === 'none') {
+      toast({
+        title: '반복 유형을 선택해주세요.',
+        status: 'error',
+        duration: 3000,
       });
       return;
     }
@@ -160,8 +180,7 @@ function App() {
       setOverlappingEvents(overlapping);
       setIsOverlapDialogOpen(true);
     } else {
-      await saveEvent(eventData);
-      resetForm();
+      addOrUpdateEvent(eventData);
     }
   };
 
@@ -384,6 +403,7 @@ function App() {
                   value={repeatType}
                   onChange={(e) => setRepeatType(e.target.value as RepeatType)}
                 >
+                  <option value="">반복 유형 선택</option>
                   <option value="daily">매일</option>
                   <option value="weekly">매주</option>
                   <option value="monthly">매월</option>
@@ -412,7 +432,7 @@ function App() {
             </VStack>
           )}
 
-          <Button data-testid="event-submit-button" onClick={addOrUpdateEvent} colorScheme="blue">
+          <Button data-testid="event-submit-button" onClick={handleSubmit} colorScheme="blue">
             {editingEvent ? '일정 수정' : '일정 추가'}
           </Button>
         </VStack>
@@ -546,7 +566,7 @@ function App() {
                 colorScheme="red"
                 onClick={() => {
                   setIsOverlapDialogOpen(false);
-                  saveEvent({
+                  addOrUpdateEvent({
                     id: editingEvent ? editingEvent.id : undefined,
                     title,
                     date,

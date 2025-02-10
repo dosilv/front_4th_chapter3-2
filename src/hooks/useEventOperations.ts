@@ -1,7 +1,8 @@
 import { useToast } from '@chakra-ui/react';
 import { useEffect, useState } from 'react';
 
-import { Event, EventForm } from '../types';
+import { Event, EventForm, RepeatingEvent, RepeatType } from '../types';
+import { getNextRepeatingDate } from '../utils/repeatingEventUtils';
 
 export const useEventOperations = (editing: boolean, onSave?: () => void) => {
   const [events, setEvents] = useState<Event[]>([]);
@@ -92,6 +93,45 @@ export const useEventOperations = (editing: boolean, onSave?: () => void) => {
     }
   };
 
+  const saveRepeatingEvent = async (eventData: RepeatingEvent) => {
+    try {
+      const repeatingEvents = [];
+
+      for (
+        let i = new Date(eventData.date);
+        i <= new Date(eventData.repeat.endDate ?? '2030-12-31');
+        i = getNextRepeatingDate(i, eventData.repeat.type, eventData.repeat.interval)
+      ) {
+        repeatingEvents.push({
+          ...eventData,
+          date: i.toISOString(),
+        });
+      }
+
+      console.log(repeatingEvents);
+      debugger;
+
+      const response = await fetch('/api/events-list', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ events: repeatingEvents }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to save repeating event');
+      }
+
+      await fetchEvents();
+      onSave?.();
+    } catch (error) {
+      console.error('Error saving repeating event:', error);
+      toast({
+        title: '일정 저장 실패',
+        status: 'error',
+      });
+    }
+  };
+
   async function init() {
     await fetchEvents();
     toast({
@@ -106,5 +146,5 @@ export const useEventOperations = (editing: boolean, onSave?: () => void) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  return { events, fetchEvents, saveEvent, deleteEvent };
+  return { events, fetchEvents, saveEvent, deleteEvent, saveRepeatingEvent };
 };

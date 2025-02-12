@@ -52,7 +52,6 @@ const clickNextButtonTwelveTimes = async (user: UserEvent) => {
   const nextButton = screen.getByLabelText('Next');
 
   for (let i = 0; i < 12; i++) {
-    console.log(i);
     await user.click(nextButton);
   }
 };
@@ -297,9 +296,12 @@ describe('반복 일정 생성', () => {
     });
 
     const monthView = within(screen.getByTestId('month-view'));
-    expect(monthView.getByText('격일 일정')).toBeInTheDocument();
+    const alternativeDayEvent = monthView.getAllByText('격일 일정')[0];
+    expect(alternativeDayEvent).toBeInTheDocument();
 
-    const repeatIcon = screen.queryByTestId('repeat-icon');
+    const upperDiv = alternativeDayEvent.closest('td');
+    const repeatIcon = within(upperDiv!).getByTestId('repeat-icon');
+
     expect(repeatIcon).toBeInTheDocument();
   });
 });

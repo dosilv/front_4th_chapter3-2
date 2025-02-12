@@ -27,6 +27,11 @@ import {
   HStack,
   IconButton,
   Input,
+  Popover,
+  PopoverArrow,
+  PopoverBody,
+  PopoverContent,
+  PopoverTrigger,
   Select,
   Table,
   Tbody,
@@ -119,6 +124,17 @@ function App() {
   const cancelRef = useRef<HTMLButtonElement>(null);
 
   const toast = useToast();
+
+  const handleEditEvent = (event: Event & { editType?: 'single' | 'repeat' }) => {
+    if (event.editType === 'single') {
+      editEvent({
+        ...event,
+        repeat: { type: 'none', interval: 1 },
+      });
+    } else {
+      editEvent(event);
+    }
+  };
 
   const addOrUpdateEvent = async (eventData: Event | EventForm) => {
     if (isRepeatingEvent(eventData)) {
@@ -527,11 +543,48 @@ function App() {
                     </Text>
                   </VStack>
                   <HStack>
-                    <IconButton
-                      aria-label="Edit event"
-                      icon={<EditIcon />}
-                      onClick={() => editEvent(event)}
-                    />
+                    {event.repeat.type !== 'none' ? (
+                      <Popover>
+                        {({ onClose }) => (
+                          <>
+                            <PopoverTrigger>
+                              <IconButton aria-label="Edit event" icon={<EditIcon />} />
+                            </PopoverTrigger>
+                            <PopoverContent width="auto" p={0}>
+                              <PopoverArrow />
+                              <PopoverBody p={1} data-testid="edit-popover">
+                                <VStack spacing={1}>
+                                  <Button
+                                    size="sm"
+                                    onClick={() => {
+                                      handleEditEvent({ ...event, editType: 'single' });
+                                      onClose();
+                                    }}
+                                  >
+                                    개별 일정 수정
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    onClick={() => {
+                                      handleEditEvent({ ...event, editType: 'repeat' });
+                                      onClose();
+                                    }}
+                                  >
+                                    반복 일정 수정
+                                  </Button>
+                                </VStack>
+                              </PopoverBody>
+                            </PopoverContent>
+                          </>
+                        )}
+                      </Popover>
+                    ) : (
+                      <IconButton
+                        aria-label="Edit event"
+                        icon={<EditIcon />}
+                        onClick={() => handleEditEvent(event)}
+                      />
+                    )}
                     <IconButton
                       aria-label="Delete event"
                       icon={<DeleteIcon />}

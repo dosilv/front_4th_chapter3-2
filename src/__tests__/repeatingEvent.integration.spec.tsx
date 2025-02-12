@@ -316,6 +316,10 @@ describe('반복 일정 수정/삭제', () => {
     const editModeBtn = await within(eventList).findAllByRole('button', { name: 'Edit event' });
     await userEvent.click(editModeBtn[0]);
 
+    const popover = within(screen.getAllByTestId('edit-popover')[0]);
+    const editBtn = popover.getByText('개별 일정 수정');
+    await userEvent.click(editBtn);
+
     await user.clear(screen.getByLabelText('제목'));
     await user.type(screen.getByLabelText('제목'), '일정 이름을 바꾸자');
 
@@ -327,7 +331,7 @@ describe('반복 일정 수정/삭제', () => {
     expect(editedEventBox).toBeInTheDocument();
     expect(within(editedEventBox!).queryByTestId('repeat-icon')).not.toBeInTheDocument();
 
-    const originalEvent = within(screen.getByTestId('month-view')).getByText('격일 일정');
+    const originalEvent = within(screen.getByTestId('month-view')).getAllByText('격일 일정')[0];
     const originalEventBox = originalEvent.closest('td');
     expect(originalEventBox).toBeInTheDocument();
     expect(within(originalEventBox!).queryByTestId('repeat-icon')).toBeInTheDocument();

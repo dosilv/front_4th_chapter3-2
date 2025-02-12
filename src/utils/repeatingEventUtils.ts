@@ -4,41 +4,57 @@ export const isRepeatingEvent = (event: unknown): event is RepeatingEvent => {
   return (event as Event).repeat.type !== 'none';
 };
 
-const getNextDailyDate = (date: Date, interval: number) => {
+const getNextDailyDate = (date: Date, interval: number, index: number) => {
   const newDate = new Date(date);
-  newDate.setDate(newDate.getDate() + interval);
+  newDate.setDate(newDate.getDate() + interval * index);
   return newDate;
 };
 
-const getNextMonthlyDate = (date: Date, interval: number) => {
-  const newDate = new Date(date);
-  let refinedDate: Date | null = null;
-  newDate.setMonth(newDate.getMonth() + interval);
-  if (newDate.getMonth() !== date.getMonth() + interval) {
-    refinedDate = new Date(newDate.getFullYear(), newDate.getMonth() - 1, 0);
-  }
-  return refinedDate ?? newDate;
-};
+const getNextMonthlyDate = (date: Date, interval: number, index: number) => {
+  const newDate = new Date(
+    date.getFullYear(),
+    date.getMonth() + interval * index,
+    date.getDate(),
+    date.getHours(),
+    date.getMinutes()
+  );
 
-const getNextYearlyDate = (date: Date, interval: number) => {
-  const newDate = new Date(date);
-  newDate.setFullYear(newDate.getFullYear() + interval);
+  if (newDate.getMonth() !== (date.getMonth() + interval * index) % 12) {
+    console.log(
+      new Date(
+        date.getFullYear(),
+        date.getMonth() + interval * index + 1,
+        0,
+        date.getHours(),
+        date.getMinutes()
+      )
+    );
+    return new Date(
+      date.getFullYear(),
+      date.getMonth() + interval * index + 1,
+      0,
+      date.getHours(),
+      date.getMinutes()
+    );
+  }
+
   return newDate;
 };
 
 export const getNextRepeatingDate = (
   date: Date,
   type: Exclude<RepeatType, 'none'>,
-  interval: number
+  interval: number,
+  index: number
 ): Date => {
   switch (type) {
     case 'daily':
-      return getNextDailyDate(date, interval);
+      return getNextDailyDate(date, interval, index);
     case 'weekly':
-      return getNextDailyDate(date, interval * 7);
+      return getNextDailyDate(date, interval * 7, index);
     case 'monthly':
-      return getNextMonthlyDate(date, interval);
+      return getNextMonthlyDate(date, interval, index);
     case 'yearly':
-      return getNextYearlyDate(date, interval);
+      return getNextMonthlyDate(date, interval * 12, index);
   }
 };

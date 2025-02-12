@@ -97,15 +97,23 @@ export const useEventOperations = (editing: boolean, onSave?: () => void) => {
     try {
       const repeatingEvents = [];
 
+      let i = 0;
+
       for (
-        let i = new Date(eventData.date);
-        i <= new Date(eventData.repeat.endDate ?? '2030-12-31');
-        i = getNextRepeatingDate(i, eventData.repeat.type, eventData.repeat.interval)
+        let date = new Date(eventData.date);
+        date <= new Date(eventData.repeat.endDate ?? '2030-12-31');
+        date = getNextRepeatingDate(
+          new Date(eventData.date),
+          eventData.repeat.type,
+          eventData.repeat.interval,
+          i
+        )
       ) {
         repeatingEvents.push({
           ...eventData,
-          date: i.toISOString(),
+          date: date.toISOString().split('T')[0],
         });
+        i++;
       }
 
       const response = await fetch('/api/events-list', {

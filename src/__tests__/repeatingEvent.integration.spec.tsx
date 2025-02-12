@@ -45,14 +45,15 @@ const saveRepeatingSchedule = async (user: UserEvent, form: Omit<Event, 'id'>) =
   await user.clear(screen.getByLabelText('반복 간격'));
   await user.type(screen.getByLabelText('반복 간격'), repeat.interval.toString());
   await user.type(screen.getByLabelText('반복 종료일'), repeat.endDate ?? '');
-
   await user.click(screen.getByTestId('event-submit-button'));
 };
 
 const clickNextButtonTwelveTimes = async (user: UserEvent) => {
   const nextButton = screen.getByLabelText('Next');
+
   for (let i = 0; i < 12; i++) {
-    await userEvent.click(nextButton);
+    console.log(i);
+    await user.click(nextButton);
   }
 };
 
@@ -215,8 +216,8 @@ describe('반복 일정 생성', () => {
       });
 
       const eventList = within(screen.getByTestId('event-list'));
-      const nextButton = screen.getByLabelText('Next');
 
+      const nextButton = screen.getByLabelText('Next');
       expect(eventList.getByText('2025-01-31')).toBeInTheDocument();
 
       await userEvent.click(nextButton);
@@ -272,7 +273,8 @@ describe('반복 일정 생성', () => {
       await clickNextButtonTwelveTimes(user);
       expect(eventList.getByText('2028-02-29')).toBeInTheDocument();
     });
-  });
+    // 오래 걸리는 테스트이므로 timeout 시간 연장
+  }, 15000);
 
   it('캘린더뷰에서 반복일정이 단일일정과 구분된다.', async () => {
     setupMockHandlerCreation();
@@ -312,6 +314,7 @@ describe('반복 일정 수정/삭제', () => {
     const editModeBtn = await within(eventList).findAllByRole('button', { name: 'Edit event' });
     await userEvent.click(editModeBtn[0]);
 
+    await user.clear(screen.getByLabelText('제목'));
     await user.type(screen.getByLabelText('제목'), '일정 이름을 바꾸자');
 
     const submitBtn = screen.getByTestId('event-submit-button');

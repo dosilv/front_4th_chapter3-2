@@ -110,10 +110,8 @@ function App() {
     editEvent,
   } = useEventForm();
 
-  const { events, saveEvent, deleteEvent, saveRepeatingEvent } = useEventOperations(
-    Boolean(editingEvent),
-    () => setEditingEvent(null)
-  );
+  const { events, saveEvent, deleteEvent, saveRepeatingEvent, deleteRepeatingEvent } =
+    useEventOperations(Boolean(editingEvent), () => setEditingEvent(null));
 
   const { notifications, notifiedEvents, setNotifications } = useNotifications(events);
   const { view, setView, currentDate, holidays, navigate } = useCalendarView();
@@ -133,6 +131,14 @@ function App() {
       });
     } else {
       editEvent(event);
+    }
+  };
+
+  const handleDeleteEvent = (event: Event & { deleteType?: 'single' | 'repeat' }) => {
+    if (event.deleteType === 'single' || !event.repeat.id) {
+      deleteEvent(event.id);
+    } else {
+      deleteRepeatingEvent(event.repeat.id!);
     }
   };
 
@@ -566,6 +572,7 @@ function App() {
                                   </Button>
                                   <Button
                                     size="sm"
+                                    colorScheme="teal"
                                     onClick={() => {
                                       handleEditEvent({ ...event, editType: 'repeat' });
                                       onClose();
@@ -586,11 +593,49 @@ function App() {
                         onClick={() => handleEditEvent(event)}
                       />
                     )}
-                    <IconButton
-                      aria-label="Delete event"
-                      icon={<DeleteIcon />}
-                      onClick={() => deleteEvent(event.id)}
-                    />
+                    {event.repeat.type !== 'none' ? (
+                      <Popover>
+                        {({ onClose }) => (
+                          <>
+                            <PopoverTrigger>
+                              <IconButton aria-label="Delete event" icon={<DeleteIcon />} />
+                            </PopoverTrigger>
+                            <PopoverContent width="auto" p={0}>
+                              <PopoverArrow />
+                              <PopoverBody p={1} data-testid="delete-popover">
+                                <VStack spacing={1}>
+                                  <Button
+                                    size="sm"
+                                    onClick={() => {
+                                      handleDeleteEvent({ ...event, deleteType: 'single' });
+                                      onClose();
+                                    }}
+                                  >
+                                    개별 일정 삭제
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    colorScheme="teal"
+                                    onClick={() => {
+                                      handleDeleteEvent({ ...event, deleteType: 'repeat' });
+                                      onClose();
+                                    }}
+                                  >
+                                    반복 일정 삭제
+                                  </Button>
+                                </VStack>
+                              </PopoverBody>
+                            </PopoverContent>
+                          </>
+                        )}
+                      </Popover>
+                    ) : (
+                      <IconButton
+                        aria-label="Delete event"
+                        icon={<DeleteIcon />}
+                        onClick={() => handleDeleteEvent(event)}
+                      />
+                    )}
                   </HStack>
                 </HStack>
               </Box>

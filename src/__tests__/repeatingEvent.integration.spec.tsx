@@ -317,8 +317,8 @@ describe('반복 일정 수정/삭제', () => {
     await userEvent.click(editModeBtn[0]);
 
     const popover = within(screen.getAllByTestId('edit-popover')[0]);
-    const editBtn = popover.getByText('개별 일정 수정');
-    await userEvent.click(editBtn);
+    const singleEditBtn = popover.getByText('개별 일정 수정');
+    await userEvent.click(singleEditBtn);
 
     await user.clear(screen.getByLabelText('제목'));
     await user.type(screen.getByLabelText('제목'), '일정 이름을 바꾸자');
@@ -345,6 +345,10 @@ describe('반복 일정 수정/삭제', () => {
     const eventList = screen.getByTestId('event-list');
     const deleteModeBtn = await within(eventList).findAllByRole('button', { name: 'Delete event' });
     await user.click(deleteModeBtn[0]);
+
+    const popover = within(screen.getAllByTestId('delete-popover')[0]);
+    const singleDeleteBtn = popover.getByText('개별 일정 삭제');
+    await userEvent.click(singleDeleteBtn);
 
     const deleteBtn = screen.getByTestId('event-submit-button');
     await user.click(deleteBtn);

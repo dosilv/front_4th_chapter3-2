@@ -44,8 +44,13 @@ const saveRepeatingSchedule = async (user: UserEvent, form: Omit<Event, 'id'>) =
   await user.selectOptions(screen.getByLabelText('카테고리'), category);
   await user.click(screen.getByLabelText('반복 일정'));
   await user.selectOptions(screen.getByLabelText('반복 유형'), repeat.type);
-  for (const day of repeat.days ?? []) {
-    await user.selectOptions(screen.getByLabelText('반복 요일'), DAY_LABELS[day]);
+  if (repeat.type === 'weekly' && repeat.days?.length) {
+    for (const day of repeat.days) {
+      const dayLabel = DAY_LABELS[day];
+      const daysGroup = await screen.findByTestId('days-group');
+      const dayLabelElement = within(daysGroup).getByText(dayLabel);
+      await user.click(dayLabelElement);
+    }
   }
   await user.clear(screen.getByLabelText('반복 간격'));
   await user.type(screen.getByLabelText('반복 간격'), repeat.interval.toString());

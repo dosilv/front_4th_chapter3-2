@@ -356,4 +356,49 @@ describe('반복 일정 수정/삭제', () => {
     expect(screen.queryByText('2025-02-10')).not.toBeInTheDocument();
     expect(screen.queryByText('2025-02-12')).toBeInTheDocument();
   });
+
+  it('반복 일정 일괄 수정 시 모든 일정이 변경된다.', async () => {
+    setupMockHandlerRepeatUpdating();
+
+    const { user } = setup(<App />);
+
+    const eventList = screen.getByTestId('event-list');
+    const editModeBtn = await within(eventList).findAllByRole('button', { name: 'Edit event' });
+    await userEvent.click(editModeBtn[0]);
+
+    const popover = within(screen.getAllByTestId('edit-popover')[0]);
+    const bulkEditBtn = popover.getByText('반복 일정 수정');
+    await userEvent.click(bulkEditBtn);
+
+    await user.clear(screen.getByLabelText('제목'));
+    await user.type(screen.getByLabelText('제목'), '수정된 이름');
+
+    const submitBtn = screen.getByTestId('event-submit-button');
+    await userEvent.click(submitBtn);
+
+    const editedEvents = await within(screen.getByTestId('month-view')).findAllByText(
+      '수정된 이름'
+    );
+    expect(editedEvents.length).toBeGreaterThan(1);
+  });
+
+  it('반복 일정 일괄 삭제 시 모든 일정이 삭제된다.', async () => {
+    setupMockHandlerRepeatDeletion();
+
+    const { user } = setup(<App />);
+
+    const eventList = screen.getByTestId('event-list');
+    const deleteModeBtn = await within(eventList).findAllByRole('button', { name: 'Delete event' });
+    await user.click(deleteModeBtn[0]);
+
+    const popover = within(screen.getAllByTestId('delete-popover')[0]);
+    const bulkDeleteBtn = popover.getByText('반복 일정 삭제');
+    await userEvent.click(bulkDeleteBtn);
+
+    const deleteBtn = screen.getByTestId('event-submit-button');
+    await user.click(deleteBtn);
+
+    expect(screen.queryByText('2025-02-10')).not.toBeInTheDocument();
+    expect(screen.queryByText('2025-02-12')).not.toBeInTheDocument();
+  });
 });

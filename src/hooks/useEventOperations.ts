@@ -162,7 +162,6 @@ export const useEventOperations = (editing: boolean, onSave?: () => void) => {
       const repeatingEventIds = events
         .filter((event: Event) => event.repeat.id === repeatId)
         .map((event: Event) => event.id);
-      console.log(repeatingEventIds);
 
       const response = await fetch('/api/events-list', {
         method: 'DELETE',

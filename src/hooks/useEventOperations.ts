@@ -119,7 +119,7 @@ export const useEventOperations = (editing: boolean, onSave?: () => void) => {
 
         for (
           let date = new Date(eventData.date);
-          date <= new Date(eventData.repeat.endDate ?? '2030-12-31');
+          date <= new Date(eventData.repeat.endDate ?? '2025-06-30');
           date = getNextRepeatingDate(
             new Date(eventData.date),
             eventData.repeat.type,

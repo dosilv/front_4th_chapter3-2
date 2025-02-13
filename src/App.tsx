@@ -232,21 +232,20 @@ function App() {
                     .filter((event) => new Date(event.date).toDateString() === date.toDateString())
                     .map((event) => {
                       const isNotified = notifiedEvents.includes(event.id);
+                      const isRepeating = event.repeat.type !== 'none';
                       return (
                         <Box
                           key={event.id}
                           p={1}
                           my={1}
-                          bg={isNotified ? 'red.100' : 'gray.100'}
+                          bg={isRepeating ? 'teal.500' : isNotified ? 'red.100' : 'gray.100'}
                           borderRadius="md"
                           fontWeight={isNotified ? 'bold' : 'normal'}
-                          color={isNotified ? 'red.500' : 'inherit'}
+                          color={isRepeating ? 'white' : isNotified ? 'red.500' : 'inherit'}
                         >
                           <HStack spacing={1}>
                             {isNotified && <BellIcon />}
-                            {event.repeat.type !== 'none' && (
-                              <RepeatIcon data-testid="repeat-icon" />
-                            )}
+                            {isRepeating && <RepeatIcon data-testid="repeat-icon" />}
                             <Text fontSize="sm" noOfLines={1}>
                               {event.title}
                             </Text>
@@ -304,15 +303,17 @@ function App() {
                           )}
                           {getEventsForDay(filteredEvents, day).map((event) => {
                             const isNotified = notifiedEvents.includes(event.id);
+                            const isRepeating = event.repeat.type !== 'none';
+
                             return (
                               <Box
                                 key={event.id}
                                 p={1}
                                 my={1}
-                                bg={isNotified ? 'red.100' : 'gray.100'}
+                                bg={isRepeating ? 'teal.500' : isNotified ? 'red.100' : 'gray.100'}
                                 borderRadius="md"
                                 fontWeight={isNotified ? 'bold' : 'normal'}
-                                color={isNotified ? 'red.500' : 'inherit'}
+                                color={isRepeating ? 'white' : isNotified ? 'red.500' : 'inherit'}
                               >
                                 <HStack spacing={1}>
                                   {isNotified && <BellIcon />}

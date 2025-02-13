@@ -185,6 +185,7 @@ function App() {
       location,
       category,
       repeat: {
+        id: editingEvent ? editingEvent.repeat.id : undefined,
         type: isRepeating ? repeatType : 'none',
         interval: repeatInterval,
         endDate: repeatEndDate || undefined,
@@ -637,6 +638,7 @@ function App() {
                     location,
                     category,
                     repeat: {
+                      id: editingEvent ? editingEvent.repeat.id : undefined,
                       type: isRepeating ? repeatType : 'none',
                       interval: repeatInterval,
                       endDate: repeatEndDate || undefined,

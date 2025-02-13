@@ -95,32 +95,51 @@ export const useEventOperations = (editing: boolean, onSave?: () => void) => {
 
   const saveRepeatingEvent = async (eventData: RepeatingEvent) => {
     try {
-      const repeatingEvents = [];
+      let response;
 
-      let i = 0;
+      if (editing) {
+        const { events } = await (await fetch('/api/events')).json();
+        const repeatingEvents = events.filter(
+          (event: Event) => event.repeat.id === eventData.repeat.id
+        );
 
-      for (
-        let date = new Date(eventData.date);
-        date <= new Date(eventData.repeat.endDate ?? '2030-12-31');
-        date = getNextRepeatingDate(
-          new Date(eventData.date),
-          eventData.repeat.type,
-          eventData.repeat.interval,
-          i
-        )
-      ) {
-        repeatingEvents.push({
-          ...eventData,
-          date: date.toISOString().split('T')[0],
+        const updatedRepeatingEvents = repeatingEvents.map((event: Event) => {
+          return { ...eventData, id: event.id, date: event.date };
         });
-        i++;
-      }
 
-      const response = await fetch('/api/events-list', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ events: repeatingEvents }),
-      });
+        response = await fetch('/api/events-list', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ events: updatedRepeatingEvents }),
+        });
+      } else {
+        const repeatingEvents = [];
+
+        let i = 0;
+
+        for (
+          let date = new Date(eventData.date);
+          date <= new Date(eventData.repeat.endDate ?? '2030-12-31');
+          date = getNextRepeatingDate(
+            new Date(eventData.date),
+            eventData.repeat.type,
+            eventData.repeat.interval,
+            i
+          )
+        ) {
+          repeatingEvents.push({
+            ...eventData,
+            date: date.toISOString().split('T')[0],
+          });
+          i++;
+        }
+
+        response = await fetch('/api/events-list', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ events: repeatingEvents }),
+        });
+      }
 
       if (!response.ok) {
         throw new Error('Failed to save repeating event');

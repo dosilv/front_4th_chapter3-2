@@ -26,6 +26,7 @@ export interface Event extends EventForm {
 export interface RepeatingEvent extends Omit<EventForm, 'repeat'> {
   id?: string;
   repeat: {
+    id: string;
     type: Exclude<RepeatType, 'none'>;
     interval: number;
     endDate?: string | undefined;

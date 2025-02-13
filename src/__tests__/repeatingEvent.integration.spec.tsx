@@ -17,6 +17,8 @@ const setup = (element: ReactElement) => {
   return { ...render(<ChakraProvider>{element}</ChakraProvider>), user }; // ? Med: 왜 ChakraProvider로 감싸는지 물어보자
 };
 
+const DAY_LABELS = ['일', '월', '화', '수', '목', '금', '토'];
+
 const saveRepeatingSchedule = async (user: UserEvent, form: Omit<Event, 'id'>) => {
   const {
     title,
@@ -42,6 +44,9 @@ const saveRepeatingSchedule = async (user: UserEvent, form: Omit<Event, 'id'>) =
   await user.selectOptions(screen.getByLabelText('카테고리'), category);
   await user.click(screen.getByLabelText('반복 일정'));
   await user.selectOptions(screen.getByLabelText('반복 유형'), repeat.type);
+  for (const day of repeat.days ?? []) {
+    await user.selectOptions(screen.getByLabelText('반복 요일'), DAY_LABELS[day]);
+  }
   await user.clear(screen.getByLabelText('반복 간격'));
   await user.type(screen.getByLabelText('반복 간격'), repeat.interval.toString());
   await user.type(screen.getByLabelText('반복 종료일'), repeat.endDate ?? '');
@@ -403,10 +408,77 @@ describe('반복 일정 수정/삭제', () => {
   });
 });
 
-describe('요일 지정 주간 일정 테스트', () => {
-  it('반복 일정을 매주로 선택한 경우 요일 지정 옵션이 표시된다.', async () => {});
+describe('주간 일정 요일 지정 테스트', () => {
+  beforeEach(() => {
+    setupMockHandlerRepeatCreation();
+  });
 
-  it('2/1일부터 2/28일까지 매주 월요일 반복 일정을 저장한 경우 2/3, 2/10, 2/17, 2/24일 일정이 저장된다.', async () => {});
+  it('반복 일정을 매주로 선택한 경우 요일 지정 옵션이 표시된다.', async () => {
+    const { user } = setup(<App />);
 
-  it('2/1일부터 2/28일까지 매주 화, 목 반복 일정을 저장한 경우 2/4, 2/6, 2/11, 2/13, 2/18, 2/20, 2/25, 2/27일 일정이 저장된다.', async () => {});
+    await user.click(screen.getByLabelText('반복 일정'));
+    await user.selectOptions(screen.getByLabelText('반복 유형'), 'weekly');
+
+    expect(screen.getByLabelText('반복 요일')).toBeInTheDocument();
+  });
+
+  it('2/1일부터 2/28일까지 매주 월요일 반복 일정을 저장한 경우 2/3, 2/10, 2/17, 2/24일 일정이 저장된다.', async () => {
+    const { user } = setup(<App />);
+
+    await saveRepeatingSchedule(user, {
+      title: '월요일 반복 일정',
+      date: '2025-02-01',
+      startTime: '10:00',
+      endTime: '11:00',
+      location: '회의실 A',
+      description: '회의',
+      category: '업무',
+      notificationTime: 10,
+      repeat: {
+        type: 'weekly',
+        interval: 1,
+        endDate: '2025-02-28',
+        days: [1],
+      },
+    });
+
+    const eventList = within(screen.getByTestId('event-list'));
+
+    expect(eventList.getByText('2025-02-03')).toBeInTheDocument();
+    expect(eventList.getByText('2025-02-10')).toBeInTheDocument();
+    expect(eventList.getByText('2025-02-17')).toBeInTheDocument();
+    expect(eventList.getByText('2025-02-24')).toBeInTheDocument();
+  });
+
+  it('2/1일부터 2/28일까지 매주 화, 목 반복 일정을 저장한 경우 2/4, 2/6, 2/11, 2/13, 2/18, 2/20, 2/25, 2/27일 일정이 저장된다.', async () => {
+    const { user } = setup(<App />);
+
+    await saveRepeatingSchedule(user, {
+      title: '화목 반복 일정',
+      date: '2025-02-01',
+      startTime: '10:00',
+      endTime: '11:00',
+      location: '회의실 A',
+      description: '회의',
+      category: '업무',
+      notificationTime: 10,
+      repeat: {
+        type: 'weekly',
+        interval: 1,
+        endDate: '2025-02-28',
+        days: [2, 4],
+      },
+    });
+
+    const eventList = within(screen.getByTestId('event-list'));
+
+    expect(eventList.getByText('2025-02-04')).toBeInTheDocument();
+    expect(eventList.getByText('2025-02-06')).toBeInTheDocument();
+    expect(eventList.getByText('2025-02-11')).toBeInTheDocument();
+    expect(eventList.getByText('2025-02-13')).toBeInTheDocument();
+    expect(eventList.getByText('2025-02-18')).toBeInTheDocument();
+    expect(eventList.getByText('2025-02-20')).toBeInTheDocument();
+    expect(eventList.getByText('2025-02-25')).toBeInTheDocument();
+    expect(eventList.getByText('2025-02-27')).toBeInTheDocument();
+  });
 });

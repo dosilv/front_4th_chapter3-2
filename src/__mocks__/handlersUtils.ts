@@ -151,7 +151,7 @@ let REPEATING_INIT_EVENTS: Event[] = [
   },
 ];
 
-export const setupMockHandlerRepeatCreation = (initEvents = [] as Event[]) => {
+export const setupMockHandlerRepeatCreation = () => {
   const mockEvents: Event[] = [];
 
   server.use(

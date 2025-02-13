@@ -20,15 +20,6 @@ const getNextMonthlyDate = (date: Date, interval: number, index: number) => {
   );
 
   if (newDate.getMonth() !== (date.getMonth() + interval * index) % 12) {
-    console.log(
-      new Date(
-        date.getFullYear(),
-        date.getMonth() + interval * index + 1,
-        0,
-        date.getHours(),
-        date.getMinutes()
-      )
-    );
     return new Date(
       date.getFullYear(),
       date.getMonth() + interval * index + 1,

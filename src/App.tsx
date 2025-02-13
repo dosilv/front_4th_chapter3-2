@@ -19,6 +19,7 @@ import {
   Box,
   Button,
   Checkbox,
+  CheckboxGroup,
   CloseButton,
   Flex,
   FormControl,
@@ -94,6 +95,8 @@ function App() {
     setIsRepeating,
     repeatType,
     setRepeatType,
+    repeatDays,
+    setRepeatDays,
     repeatInterval,
     setRepeatInterval,
     repeatEndDate,
@@ -152,6 +155,7 @@ function App() {
   };
 
   const handleSubmit = async () => {
+    console.log(repeatDays);
     if (!title || !date || !startTime || !endTime) {
       toast({
         title: '필수 정보를 모두 입력해주세요.',
@@ -195,6 +199,7 @@ function App() {
         type: isRepeating ? repeatType : 'none',
         interval: repeatInterval,
         endDate: repeatEndDate || undefined,
+        days: repeatType === 'weekly' ? repeatDays : undefined,
       },
       notificationTime,
     };
@@ -441,6 +446,26 @@ function App() {
                   <option value="yearly">매년</option>
                 </Select>
               </FormControl>
+              {repeatType === 'weekly' && (
+                <FormControl data-testid="days-group">
+                  <FormLabel>반복 요일</FormLabel>
+                  <CheckboxGroup
+                    value={repeatDays}
+                    onChange={(v) => setRepeatDays(v as number[])}
+                    isDisabled={!!editingEvent}
+                  >
+                    <HStack>
+                      <Checkbox value={0}>일</Checkbox>
+                      <Checkbox value={1}>월</Checkbox>
+                      <Checkbox value={2}>화</Checkbox>
+                      <Checkbox value={3}>수</Checkbox>
+                      <Checkbox value={4}>목</Checkbox>
+                      <Checkbox value={5}>금</Checkbox>
+                      <Checkbox value={6}>토</Checkbox>
+                    </HStack>
+                  </CheckboxGroup>
+                </FormControl>
+              )}
               <HStack width="100%">
                 <FormControl>
                   <FormLabel>반복 간격</FormLabel>
@@ -688,6 +713,7 @@ function App() {
                       type: isRepeating ? repeatType : 'none',
                       interval: repeatInterval,
                       endDate: repeatEndDate || undefined,
+                      days: repeatType === 'weekly' ? repeatDays : undefined,
                     },
                     notificationTime,
                   });

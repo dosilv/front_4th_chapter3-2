@@ -5,6 +5,7 @@ export interface RepeatInfo {
   type: RepeatType;
   interval: number;
   endDate?: string;
+  days?: number[];
 }
 
 export interface EventForm {
@@ -30,5 +31,6 @@ export interface RepeatingEvent extends Omit<EventForm, 'repeat'> {
     type: Exclude<RepeatType, 'none'>;
     interval: number;
     endDate?: string | undefined;
+    days?: number[];
   };
 }

@@ -2,7 +2,7 @@ import { useToast } from '@chakra-ui/react';
 import { useEffect, useState } from 'react';
 
 import { Event, EventForm, RepeatingEvent } from '../types';
-import { getNextRepeatingDate } from '../utils/repeatingEventUtils';
+import { getClosestStartDate, getNextRepeatingDate } from '../utils/repeatingEventUtils';
 
 export const useEventOperations = (editing: boolean, onSave?: () => void) => {
   const [events, setEvents] = useState<Event[]>([]);
@@ -115,23 +115,33 @@ export const useEventOperations = (editing: boolean, onSave?: () => void) => {
       } else {
         const repeatingEvents = [];
 
-        let i = 0;
+        const targetDays =
+          eventData.repeat.type === 'weekly' && eventData.repeat.days?.length
+            ? eventData.repeat.days
+            : null;
 
-        for (
-          let date = new Date(eventData.date);
-          date <= new Date(eventData.repeat.endDate ?? '2025-06-30');
-          date = getNextRepeatingDate(
-            new Date(eventData.date),
-            eventData.repeat.type,
-            eventData.repeat.interval,
-            i
-          )
-        ) {
-          repeatingEvents.push({
-            ...eventData,
-            date: date.toISOString().split('T')[0],
-          });
-          i++;
+        const startDates = targetDays?.map((day) =>
+          getClosestStartDate(new Date(eventData.date), day)
+        ) ?? [new Date(eventData.date)];
+
+        for (const startDate of startDates) {
+          let i = 0;
+          for (
+            let date = startDate;
+            date <= new Date(eventData.repeat.endDate ?? '2025-06-30');
+            date = getNextRepeatingDate(
+              new Date(startDate),
+              eventData.repeat.type,
+              eventData.repeat.interval,
+              i
+            )
+          ) {
+            repeatingEvents.push({
+              ...eventData,
+              date: date.toISOString().split('T')[0],
+            });
+            i++;
+          }
         }
 
         response = await fetch('/api/events-list', {

@@ -49,3 +49,15 @@ export const getNextRepeatingDate = (
       return getNextMonthlyDate(date, interval * 12, index);
   }
 };
+
+export const getClosestStartDate = (date: Date, targetDay: number): Date => {
+  const weekDays = Array.from({ length: 7 }, (_, i) => {
+    const day = new Date(date);
+    day.setDate(day.getDate() + i);
+    return day;
+  });
+
+  const targetDayIndex = weekDays.findIndex((day) => day.getDay() == targetDay);
+  console.log(weekDays[targetDayIndex]);
+  return weekDays[targetDayIndex];
+};

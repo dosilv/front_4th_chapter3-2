@@ -4,9 +4,9 @@ import { UserEvent, userEvent } from '@testing-library/user-event';
 import { ReactElement } from 'react';
 
 import {
-  setupMockHandlerCreation,
-  setupMockHandlerDeletion,
-  setupMockHandlerUpdating,
+  setupMockHandlerRepeatCreation,
+  setupMockHandlerRepeatDeletion,
+  setupMockHandlerRepeatUpdating,
 } from '../__mocks__/handlersUtils';
 import App from '../App';
 import { Event } from '../types';
@@ -58,7 +58,7 @@ const clickNextButtonTwelveTimes = async (user: UserEvent) => {
 
 beforeEach(() => {
   vi.setSystemTime('2025-02-10');
-  setupMockHandlerCreation();
+  setupMockHandlerRepeatCreation();
 });
 
 describe('반복 일정 생성', () => {
@@ -276,7 +276,7 @@ describe('반복 일정 생성', () => {
   }, 15000);
 
   it('캘린더뷰에서 반복일정이 단일일정과 구분된다.', async () => {
-    setupMockHandlerCreation();
+    setupMockHandlerRepeatCreation();
     const { user } = setup(<App />);
 
     await saveRepeatingSchedule(user, {
@@ -307,8 +307,8 @@ describe('반복 일정 생성', () => {
 });
 
 describe('반복 일정 수정/삭제', () => {
-  it('반복 일정 수정 시 단일 일정으로 변경된다.', async () => {
-    setupMockHandlerUpdating();
+  it('반복 일정 개별 수정 시 단일 일정으로 변경된다.', async () => {
+    setupMockHandlerRepeatUpdating();
 
     const { user } = setup(<App />);
 
@@ -337,8 +337,8 @@ describe('반복 일정 수정/삭제', () => {
     expect(within(originalEventBox!).queryByTestId('repeat-icon')).toBeInTheDocument();
   });
 
-  it('반복 일정 삭제 시 해당 일정만 삭제된다.', async () => {
-    setupMockHandlerDeletion();
+  it('반복 일정 개별 삭제 시 해당 일정만 삭제된다.', async () => {
+    setupMockHandlerRepeatDeletion();
 
     const { user } = setup(<App />);
 
